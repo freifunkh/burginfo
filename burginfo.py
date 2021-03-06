@@ -3,6 +3,8 @@
 import datetime
 import json
 import nodesTk
+import socket
+import urllib
 
 api_version = 1
 
@@ -12,17 +14,22 @@ if __name__ == "__main__":
 
     result = dict()
 
-    net = nodesTk.generate_from_urls(config["nodes_json"], config["graph_json"])
-    routers = set()
-    for mac in config["known_hosts"]:
-        routers |= net.get_mesh_of_node(mac)
+    try:
+        net = nodesTk.generate_from_urls(config["nodes_json"], config["graph_json"])
+    except (TypeError, socket.gaierror, urllib.error.URLError):
+        net = None
 
-    result["version"] = api_version
-    result["updated"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    result["nodes"] = len(routers)
-    result["clients"] = 0
-    for mac in routers:
-        result["clients"] += net.get_node(mac).client_count
+    if net:
+        routers = set()
+        for mac in config["known_hosts"]:
+            routers |= net.get_mesh_of_node(mac)
 
-    with open(config["output"], "w") as f:
-        json.dump(result, f)
+        result["version"] = api_version
+        result["updated"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        result["nodes"] = len(routers)
+        result["clients"] = 0
+        for mac in routers:
+            result["clients"] += net.get_node(mac).client_count
+
+        with open(config["output"], "w") as f:
+            json.dump(result, f)
