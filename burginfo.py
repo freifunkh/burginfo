@@ -20,6 +20,10 @@ if __name__ == "__main__":
         net = None
 
     if net:
+        try:
+            net.vpn_only_nodes = set(config["vpn_only_nodes"])
+        except KeyError:
+            pass
         routers = set()
         for mac in config["known_hosts"]:
             routers |= net.get_mesh_of_node(mac)
