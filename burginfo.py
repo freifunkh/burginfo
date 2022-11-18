@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import datetime
+import http.client
 import json
 import nodesTk
 import socket
@@ -16,7 +17,7 @@ if __name__ == "__main__":
 
     try:
         net = nodesTk.generate_from_urls(config["nodes_json"], config["graph_json"])
-    except (TypeError, socket.gaierror, urllib.error.URLError):
+    except (TypeError, socket.gaierror, urllib.error.URLError, http.client.IncompleteRead):
         net = None
 
     if net:
